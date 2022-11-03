@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useCallback } from 'react'
+import React, { useLayoutEffect, useState, useCallback, useEffect } from 'react'
 import {
   RefinementList,
   InfiniteHits,
@@ -51,6 +51,20 @@ function ProductHit({ hit }) {
 
 function RestoreScrollPosition({ div }) {
   const { results } = useInstantSearch()
+  const [wasNavigatedBackwards, setWasNavigatedBackwards] = useState(false)
+
+  useEffect(() => {
+    const backwardsNavigation = window.addEventListener('popstate', () => {
+      console.log('Event listener called')
+      setWasNavigatedBackwards(true)
+    })
+
+    return () => {
+      window.removeEventListener('popstate', backwardsNavigation)
+    }
+  }, [])
+
+  console.log(wasNavigatedBackwards)
 
   useLayoutEffect(() => {
     // Detect if the current page url contains a search query
@@ -60,8 +74,31 @@ function RestoreScrollPosition({ div }) {
         top: div.getBoundingClientRect().top,
         behavior: 'smooth',
       })
-    console.log(searchQuery, div?.getBoundingClientRect().top)
-  }, [window.location, results.nbHits])
+  }, [window.location, results.nbHits, div])
 
-  return null
+  return <>{wasNavigatedBackwards && <h1 style={{ background: 'red' }}>Test</h1>}</>
 }
+
+// function RestoreScrollPosition({ div }) {
+//   const [wasNavigatedBackwards, setWasNavigatedBackwards] = useState(false)
+//   const { results } = useInstantSearch()
+
+//   useLayoutEffect(() => {
+//     // Detect if the current page url contains a search query
+//     const searchQuery = window.location.search
+//     window.addEventListener('popstate', () => {
+//       setWasNavigatedBackwards(true)
+//     })
+
+//     if (searchQuery && Boolean(div)) {
+//       window?.scrollTo({
+//         top: div?.getBoundingClientRect().top,
+//         behavior: 'smooth',
+//       })
+//     }
+
+//     console.log(div?.getBoundingClientRect().top)
+//   }, [window.location, results.nbHits, div])
+
+//   return null
+// }
